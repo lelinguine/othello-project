@@ -1,0 +1,84 @@
+@import './base.css';
+
+.title {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    width: fit-content;
+    gap: 10px;
+}
+
+.rules {
+    max-width: 800px;
+    margin-top: 20px;
+    font-weight: 600;
+}
+
+mark.default {
+    background-color: white;
+    color: black;
+}
+
+mark.alternative {
+    background-color: black;
+    color: white;
+}
+
+.absolute {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    width: calc(100% - 4rem);
+    height: calc(100% - 4rem);
+    z-index: -1;
+}
+
+button {
+    position: relative;
+    border: solid 4px black;
+    text-align: center;
+    display: inline-block;
+    font-size: 1.2em;
+    cursor: pointer;
+    height: 60px;
+    width: 400px;
+    border-radius: 20px;
+    box-shadow: 4px 4px 0 0 black;
+    margin: 0.4rem
+}
+
+button.default {
+    background-color: black;
+    color: white;
+}
+
+button.alternative {
+    background-color: white;
+    color: black;
+}
+
+button img {
+    position: absolute;
+    right: 1rem;
+}
+
+button:active {
+    box-shadow: none;
+    transform: translate(4px, 4px);
+}
+
+.back {
+    display: flex;
+    align-items: center;
+    text-decoration-thickness: 2px;
+    gap: 5px;
+    margin-top: 20px;
+    width: fit-content;
+}
+  
+.back:hover, button:hover{
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+}
