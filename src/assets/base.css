@@ -1,5 +1,10 @@
 :root {
   --primary: #93A28E;
+  --secondary: #FFFFFF;
+  --tertiary: #000000;
+
+  --quartiary: #313131;
+  --quintiary: #F7F5EB;
 }
 
 @font-face {
@@ -13,8 +18,9 @@
 }
 
 body {
-  margin: 2rem;
+  margin: 0;
   background: var(--primary);
+  color: var(--tertiary);
   font-family:
     Inter,
     -apple-system,
@@ -38,14 +44,14 @@ body {
 }
 
 ::selection {
-  background-color: black;
-  color: white;
+  background-color: var(--tertiary);
+  color: var(--secondary);
 }
 
 h1 {
   margin: 0;
   font-family: 'Playfair', sans-serif;
-  font-size: 8rem;
+  font-size: 5rem;
   line-height: 0.9;
 }
 
@@ -57,7 +63,6 @@ a, p, button {
 }
 
 a {
-  color: black;
   text-decoration: underline;
   cursor: pointer;
 }
