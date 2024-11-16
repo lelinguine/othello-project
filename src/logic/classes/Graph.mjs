@@ -6,20 +6,12 @@ export class Graph {
     /**
      * Builds a graph object
      * @param {Object} options {
-     * root: Node, root node,
-     * goal: Node, goal node,
      * nodes: [Node], array of nodes,
      * }
      */
     constructor(options) {
         
         this.nodes = options?.nodes?options.nodes:[];
-
-        this.root = options?.root ? (typeof options.root === 'number' ? this.get(options.root) : options.root) : null; //set the root node, default to the first node
-        this.goal = options?.goal ? (typeof options.goal === 'number' ? this.get(options.goal) : options.goal) : null; //set the goal node, default to the last node
-
-        this.root?this.addNode(this.root):null;
-        this.goal?this.addNode(this.goal):null;
     }
 
     /**
@@ -99,31 +91,12 @@ export class Graph {
     /**
      * Get a random node from the graph
      * @param {Object} options {
-     * notRoot: boolean, true if the node should not be the root node,
-     * notGoal: boolean, true if the node should not be the goal node,
      * }
      * @returns {Node} - a random node from the graph
      */
     getRandomNode(options) {
         let node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
-        if(options?.notRoot && options?.notGoal) while(node === this.root || node === this.goal) node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
-        else if(options?.notRoot) while(node === this.root) node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
-        else if(options?.notGoal) while(node === this.goal) node = this.nodes[Math.floor(Math.random() * this.nodes.length)];
         return node;
-    }
-
-    /**
-     * Set a random root node
-     */
-    setRandomRoot() {
-        this.root = this.getRandomNode({ notGoal: true });
-    }
-
-    /**
-     * Set a random goal node
-     */
-    setRandomGoal() {
-        this.goal = this.getRandomNode({ notRoot: true });
     }
 
     /**
@@ -176,56 +149,5 @@ export class Graph {
     removeChild(parent, child) {
         parent.children = parent.children.filter(n => n !== child);
         child.parent = null;
-    }
-
-    toAdjacencyMatrix() {
-        let str = '';
-        this.nodes.map(node => {
-            let row = [];
-            this.nodes.map(n => {
-                node.children.includes(n) ? row.push('1') : row.push('0');
-            });
-            str += row.join(' ') + '\n';
-        });
-        return str;
-    }
-    
-    toAdjacencyList() {
-        let str = '';
-        this.nodes.map(node => {
-            node.children.length === 0 ? str += `${node.id}\n` : str += `${node.id} : ${node.children.map(n => n.id).join(', ')}\n`;
-        });
-        return str;
-    }
-
-    toTreeView() {
-        let buffer = [];
-        this.toTreeViewPrintRecursive(buffer, "", "");
-        return buffer.join('');
-    }
-
-    toTreeViewPrintRecursive(buffer, prefix, childrenPrefix, node = this.root) {
-        buffer.push(prefix);
-        buffer.push(node.id);
-        buffer.push('\n');
-        let children = this.getChildren(node);
-        for (let i = 0; i < children.length; i++) {
-            let next = children[i];
-            if (i < children.length - 1) {
-                this.toTreeViewPrintRecursive(buffer, childrenPrefix + "├── ", childrenPrefix + "│   ", next);
-            } else {
-                this.toTreeViewPrintRecursive(buffer, childrenPrefix + "└── ", childrenPrefix + "    ", next);
-            }
-        }
-    }
-
-    toString() {
-        let isOriented = this.nodes.filter(node => node.parent).length > 0;
-        let str = '';
-        this.nodes.map(node => {
-            str += node.id + (isOriented ? ' -> ' + node.children.map(n => n.id).join(', ') : ' -- ' + this.getEdges(node).map(n => n.id).join(', ')) + '\n';
-
-        });
-        return str;
     }
 }

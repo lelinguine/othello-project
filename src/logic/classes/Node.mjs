@@ -6,7 +6,6 @@
  * @param {number} id - the node id
  * @param {number} x - the x coordinate
  * @param {number} y - the y coordinate
- * @param {boolean} wall - true if the node is a wall
  * @param {number} cost - the cost of the node
  */
 export class Node {

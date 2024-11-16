@@ -37,10 +37,13 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* user-select: none;
+}
+
+td, img {
+  user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
-  -ms-user-select: none; */
+  -ms-user-select: none;
 }
 
 ::selection {

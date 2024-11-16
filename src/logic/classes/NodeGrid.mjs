@@ -5,19 +5,17 @@ import { Node } from './Node.mjs';
  * @param {number} id - the node id
  * @param {number} x - the x coordinate
  * @param {number} y - the y coordinate
- * @param {boolean} wall - true if the node is a wall
  * @param {number} cost - the cost of the node
  */
 export class NodeGrid extends Node {
 
-    constructor(id, x, y, wall = false, cost = 0) {
+    constructor(id, x, y, cost = 0) {
         super(id, cost);
         this.x = x;
         this.y = y;
-        this.wall = wall;
     }
 
-    clear(clearWalls = false) {
+    clear() {
         this.visited = false;
         this.found = false;
         this.path = false;
@@ -25,9 +23,6 @@ export class NodeGrid extends Node {
         this.g = null; //cost from start node
         this.parent = null;
         this.children = [];
-        if(clearWalls) {
-            this.wall = false;
-        }
     }
 
     clearChildren() {

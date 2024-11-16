@@ -16,6 +16,12 @@ https://othello-project.vercel.app
 - Déploiement au push sur Vercel
 
 ## 12/11
+- Mise en place de l'UI pour la grille
+- Position de départ pour la grille
+- Click event pour ajouter des pions sur la grille (aucunes vérifications)
+- Nettoyage du code du tp2
+
+(TODO) UI prête, faire les algo d'IA
 
 ## 26/11
 
