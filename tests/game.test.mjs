@@ -4,19 +4,16 @@ import { Grid } from '../src/logic/classes/Grid.mjs';
 import { JSDOM } from 'jsdom'; // JSDOM pour simuler le navigateur
 
 describe('Game', function () {
-
     // Avant chaque test, on crée une nouvelle instance de Grid et de Game
     beforeEach(function () {
-        const dom = new JSDOM('<!DOCTYPE html><html><body><div id="context"></div></body></html>');
-
+        const dom = new JSDOM('<!DOCTYPE html><html><body><div id="grid-container"></div><div id="context"></div></body></html>');
+        
         global.document = dom.window.document;
         global.window = dom.window;
 
         // Définir navigator via Object.defineProperty
         Object.defineProperty(global, 'navigator', {
-            value: {
-                userAgent: 'node.js'
-            },
+            value: { userAgent: 'node.js' },
             writable: true
         });
 
@@ -45,5 +42,13 @@ describe('Game', function () {
 
         // Vérifier que le coup n'a pas été joué (l'état de la cellule doit rester "null")
         expect(node.state).to.equal('white');
+    });
+
+    it('should display the correct winner at the end of the game', function () {
+        // Créer une fin de partie
+        this.game.endGame();
+
+        const contextContainer = document.getElementById('context');
+        expect(contextContainer.innerHTML).to.include('<p>It\'s a tie!</p>'); // Vérifier qu'il y a un message de match nul
     });
 });
