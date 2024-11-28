@@ -11,7 +11,6 @@ export default function dom() {
 
     let newGrid = async function () {
       grid = new GridDOM(options);
-      grid.render();
     }
 
     newGrid(options);

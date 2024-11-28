@@ -1,5 +1,7 @@
 import { Graph } from './Graph.mjs';
-import { NodeGrid } from './NodeGrid.mjs';
+import { Node } from './Node.mjs';
+
+import { Game } from './Game.mjs';
 
 /**
  * Represents a grid object
@@ -13,7 +15,6 @@ export class Grid extends Graph {
      * @param {*} options {
      * width: number, width of the grid,
      * height: number, height of the grid,
-     * cost: boolean, true if the nodes should have a cost
      * }
      */
     constructor(options) {
@@ -23,19 +24,19 @@ export class Grid extends Graph {
         this.width = options?.width ? options.width : 8;
         this.height = options?.height ? options.height : 8;
 
-        //set heuristic, default to manhattanDistance
-        this.heuristic = options?.heuristic ? options.heuristic : 'manhattanDistance';
-
         //build Grid nodes
         let id = 0; //node id
         for (let iY = 0; iY < this.height; iY++) { //loop through the grid height
             for (let iX = 0; iX < this.width; iX++) { //loop through the grid width
                 let cost = 1; //set a random cost between 2 and 15 if cost is true, set to 1 if not
-                let node = new NodeGrid(id, iX, iY, cost); //create a new NodeGrid Object
+                let node = new Node(id, iX, iY, cost); //create a new NodeGrid Object
                 this.addNode(node); //add the node to the grid
                 id++; //increment the node id
             }
         }
+
+        //create a game object
+        this.game = new Game(this);
     }
 
     /**
@@ -62,8 +63,6 @@ export class Grid extends Graph {
             if (child && child.parent == null && !child.found && !child.visited) {
                 child.found = true; //mark the child as found
                 child.parent = node; //set the parent node
-                child.h = child.heuristic(this.goal, this.heuristic); //set the heuristic value to the goal
-                child.g = node.g + child.cost; //set the cost from the start node
                 children.push(child); //add the child to the children array
             }
         });
