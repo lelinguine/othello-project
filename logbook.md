@@ -8,14 +8,14 @@ https://www.figma.com/design/pOSovonlOWki1E5SvoALK4/Othello?node-id=0-1&t=GFWsud
 ### deploiement (Vercel)
 https://othello-project.vercel.app
 
-## 29/10
+## 05/11
 - Fichier de prototypage Figma
 - Création du projet en VueJS
 - Mise en place de l'UI
 - Intégration de la grille du tp2
 - Déploiement au push sur Vercel
 
-## 12/11
+## 19/11
 - Mise en place de l'UI pour la grille
 - Position de départ pour la grille
 - Click event pour ajouter des pions sur la grille (aucunes vérifications)
@@ -23,8 +23,7 @@ https://othello-project.vercel.app
 
 (TODO) UI prête, faire les algo d'IA
 
-## 26/11
+## 05/12
 
-## 10/12
-
-## 24/12
+## 17/12
+/!\ Rapport final
