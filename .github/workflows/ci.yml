@@ -3,7 +3,7 @@ name: CI with Tests and Deploy to Vercel
 on:
   push:
     branches:
-      - main  # La branche sur laquelle vous travaillez, par exemple 'main' ou 'master'
+      - feature_human_vs_human  # La branche sur laquelle vous travaillez, par exemple 'main' ou 'master'
 
 jobs:
   test:
