@@ -1,0 +1,25 @@
+name: CI with Tests and Deploy to Vercel
+
+on:
+  push:
+    branches:
+      - main  # La branche sur laquelle vous travaillez, par exemple 'main' ou 'master'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest  # Utiliser un environnement Ubuntu pour les tests
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'  # La version de Node.js de votre projet
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        run: npm test  # Exécuter les tests
