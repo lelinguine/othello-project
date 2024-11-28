@@ -15,9 +15,6 @@ export class Node {
         this.parent = null; //parent node, for oriented graphs
         this.children = []; //children nodes for oriented graphs == edges for non-oriented graphs
 
-        this.h = null; //heuristic value
-        this.g = null; //cost from start node
-
         this.visited = false; //flag to indicate if the node has been visited
         this.found = false; //flag to indicate if the node has been found
 
@@ -25,6 +22,8 @@ export class Node {
 
         this.x = x;
         this.y = y;
+
+        this.state = null; //state of the node
     }
 
     addChild(node) {
@@ -54,8 +53,6 @@ export class Node {
         this.visited = false;
         this.found = false;
         this.path = false;
-        this.h = null;
-        this.g = null;
         this.parent = null;
         this.children = [];
     }

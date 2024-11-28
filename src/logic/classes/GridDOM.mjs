@@ -1,8 +1,6 @@
 import { Grid } from './Grid.mjs';
 import { nodeUpdateEventTarget } from '../events.mjs';
 
-import { Game } from './Game.mjs';
-
 export class GridDOM extends Grid {
 
     /**
@@ -20,12 +18,9 @@ export class GridDOM extends Grid {
     }
 
     /**
-     * Init the game
+     * Init the grid to the DOM
      */
     init() {
-        //create a game object
-        this.game = new Game(this);
-
         //render the grid
         this.render();
     }
@@ -69,9 +64,12 @@ export class GridDOM extends Grid {
                         function handleClick(event) {
                             let target = event.currentTarget;
                             let node = self.get(target.id);
-                            self.pawnToggle(node, target); 
-                            nodeUpdateEventTarget.node = node; 
+                            
+                            nodeUpdateEventTarget.node = node;
                             nodeUpdateEventTarget.dispatchEvent(new Event('nodeUpdateEvent', node));
+
+                            self.pawnToggle(node, target);
+
                             target.removeEventListener('click', handleClick);
                         }
                         td.addEventListener('click', handleClick);
@@ -86,23 +84,9 @@ export class GridDOM extends Grid {
         }
     }
 
-
-
-    
-
     pawnToggle(node, target) {
         console.log('node', node);
         const div = target.querySelector('div');
-
-        this.game.laps++;
-
-        if (this.game.laps%2 == 0) {
-            div.classList.add('white');
-            div.classList.remove('black');
-        }
-        else {
-            div.classList.add('black');
-            div.classList.remove('white');
-        }
+        div.classList.add(node.state);
     }
 }

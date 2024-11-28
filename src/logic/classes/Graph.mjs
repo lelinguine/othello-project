@@ -10,7 +10,6 @@ export class Graph {
      * }
      */
     constructor(options) {
-        
         this.nodes = options?.nodes?options.nodes:[];
     }
 
