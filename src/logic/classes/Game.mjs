@@ -242,7 +242,6 @@ export class Game {
         let p = document.createElement('p');
         if (blackCount > whiteCount) {
             p.innerHTML = 'Black wins!';
-            winner = 'Black wins!';
         } else if (whiteCount > blackCount) {
             p.innerHTML = 'White wins!';
         } else {
