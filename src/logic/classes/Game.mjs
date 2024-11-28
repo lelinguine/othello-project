@@ -1,3 +1,4 @@
+import { Timer } from './Timer.mjs';
 import { nodeUpdateEventTarget } from '../events.mjs';
 
 export class Game {
@@ -6,15 +7,16 @@ export class Game {
         this.grid = grid;
         this.currentPlayer = 'black'; // Le joueur noir commence
         this.laps = 0;
+        this.timer = new Timer();
         this.listenToNodeUpdates();
         this.initializeBoard();
     }
 
     // Écoute les événements de mise à jour des nœuds
     listenToNodeUpdates() {
-        nodeUpdateEventTarget.addEventListener('nodeUpdateEvent', (event) => {
-            const updatedNode = event.target.node; // Récupère le nœud mis à jour
-            this.handleNodeUpdate(updatedNode);   // Traite le nœud mis à jour
+        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
+            const node = event.target.node; // Récupère le nœud mis à jour
+            this.handleNodeUpdate(node);   // Traite le nœud mis à jour
         });
     }
 
@@ -25,12 +27,11 @@ export class Game {
         this.grid.getById((middle - 1) * this.grid.width + (middle - 1)).state = 'white';
         this.grid.getById(middle * this.grid.width + (middle - 1)).state = 'black';
         this.grid.getById((middle - 1) * this.grid.width + middle).state = 'black';
+        this.markValidMoves();
     }
 
     // Gère les mises à jour d'un nœud
     handleNodeUpdate(node) {
-        console.log(`Nœud mis à jour :`, node);
-
         // Vérification si le coup est valide avant de placer le pion
         if (this.isValidMove(node.x, node.y)) {
             // On place un pion du joueur actuel
@@ -45,22 +46,25 @@ export class Game {
             // Incrémenter le compteur de tours
             this.laps++;
 
+            // Vérifier si le joueur peut encore jouer
+            if (!this.hasValidMoves(this.currentPlayer)) {
+                this.skipTurn();
+            }
+
             // Vérifier la fin de la partie
             if (this.isGameOver()) {
+                this.timer.stop();
                 this.endGame();
             }
 
             this.markValidMoves();
-        } else {
-            console.log('Coup invalide, vous ne pouvez pas poser un pion ici');
-
-            // Vérifier si le joueur peut encore jouer
-            if (!this.hasValidMoves(this.currentPlayer)) {
-                console.log(`${this.currentPlayer} ne peut pas jouer son tour`);
-                this.skipTurn();
-            }
         }
     }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+
+    // -------------------------------------------------------------------------------------------------------------------
 
     // Capture des pions selon les règles du jeu
     capturePawns(node) {
@@ -85,7 +89,7 @@ export class Game {
             while (this.isValidPosition(x, y)) {
                 let neighbor = this.grid.getById(y * this.grid.width + x);
 
-                if (neighbor.state === null) {
+                if (this.isNextMove(neighbor)) {
                     break;
                 }
 
@@ -108,7 +112,7 @@ export class Game {
     isValidMove(x, y) {
         // La cellule doit être vide
         const node = this.grid.getById(y * this.grid.width + x);
-        if (node.state !== null) {
+        if (!this.isNextMove(node)) {
             return false;
         }
 
@@ -137,7 +141,7 @@ export class Game {
             while (this.isValidPosition(newX, newY)) {
                 const neighbor = this.grid.getById(newY * this.grid.width + newX);
 
-                if (neighbor.state === null) {
+                if (this.isNextMove(neighbor)) {
                     break;
                 }
 
@@ -165,14 +169,6 @@ export class Game {
         return x >= 0 && x < this.grid.width && y >= 0 && y < this.grid.height;
     }
 
-    // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
-    isGameOver() {
-        // Vérifie si l'un des joueurs ne peut plus jouer
-        const blackMoves = this.hasValidMoves('black');
-        const whiteMoves = this.hasValidMoves('white');
-        return !blackMoves && !whiteMoves;
-    }
-
     // Vérifie si un joueur a des coups valides à jouer
     hasValidMoves(player) {
         for (let x = 0; x < this.grid.width; x++) {
@@ -188,19 +184,20 @@ export class Game {
     // Marquer les cases valides où le joueur actuel peut jouer
     markValidMoves() {
         // Réinitialiser les cases valides
-        // this.resetValidMoves();
+        this.resetValidMoves();
 
-        // for (let x = 0; x < this.grid.width; x++) {
-        //     for (let y = 0; y < this.grid.height; y++) {
-        //         const node = this.grid.getById(y * this.grid.width + x);
-        //         if (this.isValidMove(x, y)) {
-        //             node.state = 'grey';  // Marquer la case comme jouable avec la couleur grey
+        for (let x = 0; x < this.grid.width; x++) {
+            for (let y = 0; y < this.grid.height; y++) {
+                const node = this.grid.getById(y * this.grid.width + x);
+                if (this.isValidMove(x, y)) {
+                    node.state = this.currentPlayer === 'black' ? 'black-grey' : 'white-grey';
+                }
+            }
+        }
+    }
 
-        //             nodeUpdateEventTarget.node = node;
-        //             nodeUpdateEventTarget.dispatchEvent(new Event('nodeUpdateEvent', node));
-        //         }
-        //     }
-        // }
+    isNextMove(node) {
+        return node.state === null || node.state === 'black-grey' || node.state === 'white-grey';
     }
 
     // Réinitialiser les cases valides à leur état d'origine
@@ -208,9 +205,8 @@ export class Game {
         for (let x = 0; x < this.grid.width; x++) {
             for (let y = 0; y < this.grid.height; y++) {
                 const node = this.grid.getById(y * this.grid.width + x);
-                if (node.state === 'grey') {
+                if (this.isNextMove(node)) {
                     node.state = null;  // Réinitialiser l'état de la case
-
                 }
             }
         }
@@ -218,7 +214,6 @@ export class Game {
 
     // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
-        console.log(`${this.currentPlayer} ne peut pas jouer son tour, passage au joueur suivant.`);
         // Passer au joueur suivant
         this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
         this.laps++; // Incrémenter les tours même si le joueur ne joue pas
@@ -226,23 +221,36 @@ export class Game {
         this.markValidMoves();
     }
 
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
+    isGameOver() {
+        // Vérifie si l'un des joueurs ne peut plus jouer
+        const blackMoves = this.hasValidMoves('black');
+        const whiteMoves = this.hasValidMoves('white');
+        return !blackMoves && !whiteMoves;
+    }
+
     // Gère la fin de la partie et affiche le gagnant
     endGame() {
         const blackCount = this.countPawns('black');
         const whiteCount = this.countPawns('white');
 
-        let winner = '';
+        let contextContainer = document.getElementById('context');
+        contextContainer.innerHTML = "";
+
+        let p = document.createElement('p');
         if (blackCount > whiteCount) {
-            winner = 'black';
+            p.innerHTML = 'Black wins!';
+            winner = 'Black wins!';
         } else if (whiteCount > blackCount) {
-            winner = 'white';
+            p.innerHTML = 'White wins!';
         } else {
-            winner = 'draw';
+            p.innerHTML = 'It\'s a tie!';
         }
 
-        console.log(`La partie est terminée !`);
-        console.log(`Scores: Noir - ${blackCount}, Blanc - ${whiteCount}`);
-        console.log(`Le gagnant est : ${winner === 'draw' ? 'Match nul' : winner}`);
+        contextContainer.appendChild(p);
+        contextContainer.style.display = 'flex';
     }
 
     // Compte le nombre de pions d'un joueur

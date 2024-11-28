@@ -14,14 +14,6 @@ export class GridDOM extends Grid {
         super(options);
         this.options = options;
 
-        this.init();
-    }
-
-    /**
-     * Init the grid to the DOM
-     */
-    init() {
-        //render the grid
         this.render();
     }
 
@@ -62,20 +54,20 @@ export class GridDOM extends Grid {
         }
     }
 
+    /**
+     * Handle the cell click event
+     */
     handleCellClick(event) {
         let self = this;
         let target = event.currentTarget;
         let node = self.get(target.id);
         
         nodeUpdateEventTarget.node = node;
-        nodeUpdateEventTarget.dispatchEvent(new Event('nodeUpdateEvent', node));
+        nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', node));
 
         const div = target.querySelector('div');
         div.classList.add(node.state);
 
         this.render();
-
-        target.removeEventListener('click', this.handleCellClick);
     }
-
 }
