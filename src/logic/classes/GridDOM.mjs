@@ -47,46 +47,35 @@ export class GridDOM extends Grid {
                     let node = this.get(this.getId(j, i)); //get the node by coordinates
                     td.id = node.id; //set the cell id to the node id
 
-                    let innerDiv = document.createElement('div'); //create a div element to display the node id and cost
+                    let div = document.createElement('div'); //create a div element to display the node id and cost
+                    div.classList.add(node.state, 'circle');
                     
-                    //init white and black circles in the middle of the grid 
-                    if(i == this.options.height/2 - 1 && j == this.options.width/2 - 1 || i == this.options.height/2 && j == this.options.width/2) {
-                        innerDiv.className = 'circle white';
-                    }
-                    else if (i == this.options.height/2 && j == this.options.width/2 - 1 || i == this.options.height/2 - 1 && j == this.options.width/2) {
-                        innerDiv.className = 'circle black';
-                    }
-                    else {
-                        innerDiv.className = 'circle';
-                    
-                        //add event listener to toggle
-                        let self = this;
-                        function handleClick(event) {
-                            let target = event.currentTarget;
-                            let node = self.get(target.id);
-                            
-                            nodeUpdateEventTarget.node = node;
-                            nodeUpdateEventTarget.dispatchEvent(new Event('nodeUpdateEvent', node));
-
-                            self.pawnToggle(node, target);
-
-                            target.removeEventListener('click', handleClick);
-                        }
-                        td.addEventListener('click', handleClick);
-                    }
-
-                    td.appendChild(innerDiv);
+                    td.addEventListener('click', (event) => this.handleCellClick(event));
+                    td.appendChild(div);
                 }
             }
 
             //append grid to the DOM
+            let gridContainer = document.getElementById('grid-container');
+            gridContainer.innerHTML = "";
             document.getElementById('grid-container').appendChild(htmlTableGrid);
         }
     }
 
-    pawnToggle(node, target) {
-        console.log('node', node);
+    handleCellClick(event) {
+        let self = this;
+        let target = event.currentTarget;
+        let node = self.get(target.id);
+        
+        nodeUpdateEventTarget.node = node;
+        nodeUpdateEventTarget.dispatchEvent(new Event('nodeUpdateEvent', node));
+
         const div = target.querySelector('div');
         div.classList.add(node.state);
+
+        this.render();
+
+        target.removeEventListener('click', this.handleCellClick);
     }
+
 }
