@@ -64,16 +64,6 @@ button {
     margin: 0.4rem
 }
 
-button[disabled] {
-    opacity: 0.8;
-    cursor: not-allowed;
-}
-
-button:active:not([disabled]) {
-    box-shadow: none;
-    transform: translate(4px, 4px);
-}
-
 button.default {
     background-color: var(--tertiary);
     color: var(--secondary);
@@ -88,8 +78,18 @@ button img {
     position: absolute;
     right: 1rem;
 }
-  
-.back:hover, button:hover {
+
+button[disabled] {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+button:active:not([disabled]) {
+    box-shadow: none;
+    transform: translate(4px, 4px);
+}
+
+.back:hover, button:hover:not([disabled]) {
     text-decoration: underline;
     text-decoration-thickness: 3px;
 }
