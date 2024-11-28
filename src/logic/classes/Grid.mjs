@@ -1,5 +1,5 @@
 import { Graph } from './Graph.mjs';
-import { NodeGrid } from './NodeGrid.mjs';
+import { Node } from './Node.mjs';
 
 /**
  * Represents a grid object
@@ -13,7 +13,6 @@ export class Grid extends Graph {
      * @param {*} options {
      * width: number, width of the grid,
      * height: number, height of the grid,
-     * cost: boolean, true if the nodes should have a cost
      * }
      */
     constructor(options) {
@@ -31,7 +30,7 @@ export class Grid extends Graph {
         for (let iY = 0; iY < this.height; iY++) { //loop through the grid height
             for (let iX = 0; iX < this.width; iX++) { //loop through the grid width
                 let cost = 1; //set a random cost between 2 and 15 if cost is true, set to 1 if not
-                let node = new NodeGrid(id, iX, iY, cost); //create a new NodeGrid Object
+                let node = new Node(id, iX, iY, cost); //create a new NodeGrid Object
                 this.addNode(node); //add the node to the grid
                 id++; //increment the node id
             }

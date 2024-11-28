@@ -1,6 +1,8 @@
 import { Grid } from './Grid.mjs';
 import { nodeUpdateEventTarget } from '../events.mjs';
 
+import { Game } from './Game.mjs';
+
 export class GridDOM extends Grid {
 
     /**
@@ -8,13 +10,24 @@ export class GridDOM extends Grid {
      * @param {*} options {
      * width: number, width of the grid,
      * height: number, height of the grid,
-     * walls: [number], array of node ids that are walls,
-     * cost: boolean, true if the nodes should have a cost
      * }
      */
     constructor(options) {
         super(options);
         this.options = options;
+
+        this.init();
+    }
+
+    /**
+     * Init the game
+     */
+    init() {
+        //create a game object
+        this.game = new Game(this);
+
+        //render the grid
+        this.render();
     }
 
     /**
@@ -73,14 +86,17 @@ export class GridDOM extends Grid {
         }
     }
 
-    //temporaire à faire proprement
+
+
+    
+
     pawnToggle(node, target) {
         console.log('node', node);
         const div = target.querySelector('div');
 
-        compteur = compteur + 1;
+        this.game.laps++;
 
-        if (compteur%2 == 0) {
+        if (this.game.laps%2 == 0) {
             div.classList.add('white');
             div.classList.remove('black');
         }
@@ -90,5 +106,3 @@ export class GridDOM extends Grid {
         }
     }
 }
-
-let compteur = 0;

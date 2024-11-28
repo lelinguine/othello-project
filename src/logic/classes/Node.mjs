@@ -9,7 +9,7 @@
  * @param {number} cost - the cost of the node
  */
 export class Node {
-    constructor(id, cost = 0) {
+    constructor(id, x, y, cost = 0) {
         this.id = id;
         this.cost = cost;
         this.parent = null; //parent node, for oriented graphs
@@ -22,6 +22,9 @@ export class Node {
         this.found = false; //flag to indicate if the node has been found
 
         this.path = false; //flag to indicate if the node is part of the path
+
+        this.x = x;
+        this.y = y;
     }
 
     addChild(node) {
@@ -63,18 +66,4 @@ export class Node {
     clearChildren() {
         this.children = [];
     }
-
-    /**
-     * Set the heuristic value for the node
-     * @param {Node} nodeTarget - the target node
-     * @param {Function} heuristicFunction - the heuristic function to use
-     * @returns {number} - the heuristic value
-     * @returns {null} - if the heuristic function is not provided
-     */
-    heuristic(nodeTarget, heuristicFunction) {
-        if (!heuristicFunction) return null;
-        this.h = heuristicFunction(this, nodeTarget);
-        return this.h;
-    }
-
 }
