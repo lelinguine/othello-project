@@ -126,11 +126,15 @@ td {
     }
 
     .circle.black {
-        background-color: var(--tertiary);;
-        border: 4px solid var(--tertiary);;
+        background-color: var(--tertiary);
+        border: 4px solid var(--tertiary);
     }
     
     .circle.white {
-        border: 4px solid var(--tertiary);;
+        border: 4px solid var(--tertiary);
+    }
+
+    .circle.grey {
+        border: 4px solid lightgray;
     }
 }

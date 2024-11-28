@@ -49,6 +49,8 @@ export class Game {
             if (this.isGameOver()) {
                 this.endGame();
             }
+
+            this.markValidMoves();
         } else {
             console.log('Coup invalide, vous ne pouvez pas poser un pion ici');
 
@@ -183,12 +185,45 @@ export class Game {
         return false;
     }
 
+    // Marquer les cases valides où le joueur actuel peut jouer
+    markValidMoves() {
+        // Réinitialiser les cases valides
+        // this.resetValidMoves();
+
+        // for (let x = 0; x < this.grid.width; x++) {
+        //     for (let y = 0; y < this.grid.height; y++) {
+        //         const node = this.grid.getById(y * this.grid.width + x);
+        //         if (this.isValidMove(x, y)) {
+        //             node.state = 'grey';  // Marquer la case comme jouable avec la couleur grey
+
+        //             nodeUpdateEventTarget.node = node;
+        //             nodeUpdateEventTarget.dispatchEvent(new Event('nodeUpdateEvent', node));
+        //         }
+        //     }
+        // }
+    }
+
+    // Réinitialiser les cases valides à leur état d'origine
+    resetValidMoves() {
+        for (let x = 0; x < this.grid.width; x++) {
+            for (let y = 0; y < this.grid.height; y++) {
+                const node = this.grid.getById(y * this.grid.width + x);
+                if (node.state === 'grey') {
+                    node.state = null;  // Réinitialiser l'état de la case
+
+                }
+            }
+        }
+    }
+
     // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
         console.log(`${this.currentPlayer} ne peut pas jouer son tour, passage au joueur suivant.`);
         // Passer au joueur suivant
         this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
         this.laps++; // Incrémenter les tours même si le joueur ne joue pas
+
+        this.markValidMoves();
     }
 
     // Gère la fin de la partie et affiche le gagnant
