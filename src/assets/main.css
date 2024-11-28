@@ -64,6 +64,16 @@ button {
     margin: 0.4rem
 }
 
+button[disabled] {
+    opacity: 0.8;
+    cursor: not-allowed;
+}
+
+button:active:not([disabled]) {
+    box-shadow: none;
+    transform: translate(4px, 4px);
+}
+
 button.default {
     background-color: var(--tertiary);
     color: var(--secondary);
@@ -77,11 +87,6 @@ button.alternative {
 button img {
     position: absolute;
     right: 1rem;
-}
-
-button:active {
-    box-shadow: none;
-    transform: translate(4px, 4px);
 }
   
 .back:hover, button:hover {
