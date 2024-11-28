@@ -24,6 +24,12 @@ https://othello-project.vercel.app
 (TODO) UI prête, faire les algo d'IA
 
 ## 05/12
+- Jeu joueur contre joueur fonctionnel
+Initialisation de la grille, affichage des coups possibles, ajout des règles, message de fin de partie.
+- Ajout de tests
+Test de la classe Game
+- Ajout de GitHub Actions
+Les tests sont lancés sur le main, le déploiement sur Vercel attends que les tests passent.
 
 ## 17/12
 /!\ Rapport final
