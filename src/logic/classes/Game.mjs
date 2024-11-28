@@ -44,8 +44,19 @@ export class Game {
 
             // Incrémenter le compteur de tours
             this.laps++;
+
+            // Vérifier la fin de la partie
+            if (this.isGameOver()) {
+                this.endGame();
+            }
         } else {
             console.log('Coup invalide, vous ne pouvez pas poser un pion ici');
+
+            // Vérifier si le joueur peut encore jouer
+            if (!this.hasValidMoves(this.currentPlayer)) {
+                console.log(`${this.currentPlayer} ne peut pas jouer son tour`);
+                this.skipTurn();
+            }
         }
     }
 
@@ -150,5 +161,66 @@ export class Game {
     // Vérifie si une position est valide (dans les limites de la grille)
     isValidPosition(x, y) {
         return x >= 0 && x < this.grid.width && y >= 0 && y < this.grid.height;
+    }
+
+    // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
+    isGameOver() {
+        // Vérifie si l'un des joueurs ne peut plus jouer
+        const blackMoves = this.hasValidMoves('black');
+        const whiteMoves = this.hasValidMoves('white');
+        return !blackMoves && !whiteMoves;
+    }
+
+    // Vérifie si un joueur a des coups valides à jouer
+    hasValidMoves(player) {
+        for (let x = 0; x < this.grid.width; x++) {
+            for (let y = 0; y < this.grid.height; y++) {
+                if (this.isValidMove(x, y)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    // Sauter le tour du joueur actuel si aucun coup valide
+    skipTurn() {
+        console.log(`${this.currentPlayer} ne peut pas jouer son tour, passage au joueur suivant.`);
+        // Passer au joueur suivant
+        this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+        this.laps++; // Incrémenter les tours même si le joueur ne joue pas
+    }
+
+    // Gère la fin de la partie et affiche le gagnant
+    endGame() {
+        const blackCount = this.countPawns('black');
+        const whiteCount = this.countPawns('white');
+
+        let winner = '';
+        if (blackCount > whiteCount) {
+            winner = 'black';
+        } else if (whiteCount > blackCount) {
+            winner = 'white';
+        } else {
+            winner = 'draw';
+        }
+
+        console.log(`La partie est terminée !`);
+        console.log(`Scores: Noir - ${blackCount}, Blanc - ${whiteCount}`);
+        console.log(`Le gagnant est : ${winner === 'draw' ? 'Match nul' : winner}`);
+    }
+
+    // Compte le nombre de pions d'un joueur
+    countPawns(player) {
+        let count = 0;
+        for (let x = 0; x < this.grid.width; x++) {
+            for (let y = 0; y < this.grid.height; y++) {
+                const node = this.grid.getById(y * this.grid.width + x);
+                if (node.state === player) {
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 }
