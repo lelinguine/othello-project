@@ -33,6 +33,7 @@ export class Robot {
         }
     }
 
+    // Joue un coup
     play() {
         let contextContainer = document.getElementById('context');
         contextContainer.innerHTML = "";
@@ -57,7 +58,7 @@ export class Robot {
             contextContainer.style.display = 'none';
             this.grid.render();
         }
-        , 200);
+        , 800);
 
     }
 
