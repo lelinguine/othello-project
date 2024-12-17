@@ -1,6 +1,8 @@
 import { Timer } from './Timer.mjs';
 import { nodeUpdateEventTarget } from '../events.mjs';
 
+import { Robot } from './Robot.mjs';
+
 export class Game {
 
     constructor(grid) {
@@ -10,6 +12,7 @@ export class Game {
         this.timer = new Timer();
         this.listenToNodeUpdates();
         this.initializeBoard();
+        this.createRobot();
     }
 
     // Écoute les événements de mise à jour des nœuds
@@ -17,6 +20,8 @@ export class Game {
         nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
             const node = event.target.node; // Récupère le nœud mis à jour
             this.handleNodeUpdate(node);   // Traite le nœud mis à jour
+
+            console.log('Node updated');
         });
     }
 
@@ -58,6 +63,25 @@ export class Game {
             }
 
             this.markValidMoves();
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    //create a robot object
+    createRobot() {
+        const currentUrl = window.location.href;
+        if (!currentUrl.includes('multi') && currentUrl.includes('player')) {
+            this.robot = new Robot(this, this.grid, "white");
+            console.log("player");
+        }
+        else if (currentUrl.includes('spectator')) {
+            this.robot_black = new Robot(this, this.grid, "black");
+            this.robot_white = new Robot(this, this.grid, "white");
+            console.log("spectator");
+        }
+        else {
+            console.log("multiplayer");
         }
     }
 
