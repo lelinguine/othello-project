@@ -33,3 +33,4 @@ Les tests sont lancés sur le main, le déploiement sur Vercel attends que les t
 
 ## 17/12
 /!\ Rapport final
+CR_IA_M1_MIASHS_IC.pdf
