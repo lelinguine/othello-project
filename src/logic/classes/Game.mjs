@@ -1,5 +1,5 @@
 import { Timer } from './Timer.mjs';
-import { nodeUpdateEventTarget } from '../events.mjs';
+import { nodeUpdateEventTarget, gridUpdateEventTarget } from '../events.mjs';
 
 import { Robot } from './Robot.mjs';
 
@@ -7,32 +7,46 @@ export class Game {
 
     constructor(grid) {
         this.grid = grid;
-        this.currentPlayer = 'black'; // Le joueur noir commence
         this.laps = 0;
         this.timer = new Timer();
-        this.listenToNodeUpdates();
         this.initializeBoard();
         this.createRobot();
-    }
-
-    // Écoute les événements de mise à jour des nœuds
-    listenToNodeUpdates() {
-        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
-            const node = event.target.node; // Récupère le nœud mis à jour
-            this.handleNodeUpdate(node);   // Traite le nœud mis à jour
-
-            console.log('Node updated');
-        });
+        this.listenToNodeUpdates();
     }
 
     // Initialisation de la grille avec les 4 pions de départ
     initializeBoard() {
+        this.currentPlayer = 'black'; // Le joueur noir commence
         const middle = Math.floor(this.grid.width / 2);
         this.grid.getById(middle * this.grid.width + middle).state = 'white';
         this.grid.getById((middle - 1) * this.grid.width + (middle - 1)).state = 'white';
         this.grid.getById(middle * this.grid.width + (middle - 1)).state = 'black';
         this.grid.getById((middle - 1) * this.grid.width + middle).state = 'black';
         this.markValidMoves();
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    //create a robot object
+    createRobot() {
+        const currentUrl = window.location.href;
+        if (!currentUrl.includes('multi') && currentUrl.includes('player')) {
+            this.robot = new Robot(this, this.grid, "white");
+        }
+        else if (currentUrl.includes('spectator')) {
+            this.robot_black = new Robot(this, this.grid, "black");
+            this.robot_white = new Robot(this, this.grid, "white");
+        }
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Écoute les événements de mise à jour des nœuds
+    listenToNodeUpdates() {
+        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
+            const node = event.target.node;
+            this.handleNodeUpdate(node); 
+        });
     }
 
     // Gère les mises à jour d'un nœud
@@ -45,43 +59,19 @@ export class Game {
             // Vérification des captures
             this.capturePawns(node);
 
-            // Changer de joueur
-            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
-
             // Incrémenter le compteur de tours
             this.laps++;
 
-            // Vérifier si le joueur peut encore jouer
-            if (!this.hasValidMoves(this.currentPlayer)) {
-                this.skipTurn();
-            }
+            // Marquer les mouvements valides pour le prochain joueur
+            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
 
-            // Vérifier la fin de la partie
-            if (this.isGameOver()) {
-                this.timer.stop();
-                this.endGame();
-            }
-
+            // Vérifier si le joueur actuel peut jouer, sinon sauter son tour
+            this.skipTurn();
+            
             this.markValidMoves();
-        }
-    }
 
-    // -------------------------------------------------------------------------------------------------------------------
-
-    //create a robot object
-    createRobot() {
-        const currentUrl = window.location.href;
-        if (!currentUrl.includes('multi') && currentUrl.includes('player')) {
-            this.robot = new Robot(this, this.grid, "white");
-            console.log("player");
-        }
-        else if (currentUrl.includes('spectator')) {
-            this.robot_black = new Robot(this, this.grid, "black");
-            this.robot_white = new Robot(this, this.grid, "white");
-            console.log("spectator");
-        }
-        else {
-            console.log("multiplayer");
+            gridUpdateEventTarget.grid = this.grid;
+            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
         }
     }
 
@@ -233,16 +223,25 @@ export class Game {
         }
     }
 
+     // -------------------------------------------------------------------------------------------------------------------
+
     // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
-        // Passer au joueur suivant
-        this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
-        this.laps++; // Incrémenter les tours même si le joueur ne joue pas
+        if (!this.hasValidMoves(this.currentPlayer)) {
+            // Passer au joueur suivant
+            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
 
-        this.markValidMoves();
+            // Vérifier si le prochain joueur peut jouer
+            if (!this.hasValidMoves(this.currentPlayer)) {
+                // Si le prochain joueur ne peut pas jouer, on vérifie la fin de la partie
+                if (this.isGameOver()) {
+                    this.timer.stop();
+                    this.endGame();
+                    return;
+                }
+            }
+        }
     }
-
-    // -------------------------------------------------------------------------------------------------------------------
 
     // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
     isGameOver() {

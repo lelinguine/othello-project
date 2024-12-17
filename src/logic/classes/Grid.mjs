@@ -34,9 +34,6 @@ export class Grid extends Graph {
                 id++; //increment the node id
             }
         }
-
-        //create a game object
-        this.game = new Game(this);
     }
 
     /**

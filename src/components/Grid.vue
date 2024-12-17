@@ -5,12 +5,12 @@
 </template>
 
 <script>
-  import dom from './../logic/dom.mjs';
+  import board from '../logic/board.mjs';
 
   export default {
     name: 'Grid-Component',
     mounted() {
-      dom();
+      board();
     }
   };
 </script>
