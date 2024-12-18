@@ -1,6 +1,5 @@
 /**
  * Returns an event target containing a node
- * used when a node is updated in a search algorithm
  */
 export class NodeEvent extends EventTarget {
     constructor(node) {
@@ -19,6 +18,7 @@ export class NodeEvent extends EventTarget {
 
 export let nodeUpdateEventTarget = new NodeEvent();
 
+// -------------------------------------------------------------------------------------------------------------------
 
 /**
  * Returns an event target containing a grid

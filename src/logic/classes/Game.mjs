@@ -1,8 +1,6 @@
 import { Timer } from './Timer.mjs';
 import { nodeUpdateEventTarget, gridUpdateEventTarget } from '../events.mjs';
 
-import { Robot } from './Robot.mjs';
-
 export class Game {
 
     constructor(grid) {
@@ -10,7 +8,6 @@ export class Game {
         this.laps = 0;
         this.timer = new Timer();
         this.initializeBoard();
-        this.createRobot();
         this.listenToNodeUpdates();
     }
 
@@ -27,20 +24,6 @@ export class Game {
 
     // -------------------------------------------------------------------------------------------------------------------
 
-    //create a robot object
-    createRobot() {
-        const currentUrl = window.location.href;
-        if (!currentUrl.includes('multi') && currentUrl.includes('player')) {
-            this.robot = new Robot(this, this.grid, "white");
-        }
-        else if (currentUrl.includes('spectator')) {
-            this.robot_black = new Robot(this, this.grid, "black");
-            this.robot_white = new Robot(this, this.grid, "white");
-        }
-    }
-
-    // -------------------------------------------------------------------------------------------------------------------
-
     // Écoute les événements de mise à jour des nœuds
     listenToNodeUpdates() {
         nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
@@ -53,17 +36,9 @@ export class Game {
     handleNodeUpdate(node) {
         // Vérification si le coup est valide avant de placer le pion
         if (this.isValidMove(node.x, node.y)) {
-            // On place un pion du joueur actuel
-            node.state = this.currentPlayer;
 
-            // Vérification des captures
+            // Captures
             this.capturePawns(node);
-
-            // Incrémenter le compteur de tours
-            this.laps++;
-
-            // Marquer les mouvements valides pour le prochain joueur
-            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
 
             // Vérifier si le joueur actuel peut jouer, sinon sauter son tour
             this.skipTurn();
@@ -79,6 +54,9 @@ export class Game {
 
     // Capture des pions selon les règles du jeu
     capturePawns(node) {
+        // On place un pion du joueur actuel
+        node.state = this.currentPlayer;
+
         const directions = [
             { x: 1, y: 0 },  // droite
             { x: -1, y: 0 }, // gauche
@@ -227,6 +205,9 @@ export class Game {
 
     // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
+        // Marquer les mouvements valides pour le prochain joueur
+        this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+
         if (!this.hasValidMoves(this.currentPlayer)) {
             // Passer au joueur suivant
             this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
@@ -241,6 +222,8 @@ export class Game {
                 }
             }
         }
+        // Incrémenter le compteur de tours
+        this.laps++;
     }
 
     // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)

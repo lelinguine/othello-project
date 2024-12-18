@@ -10,7 +10,7 @@
   export default {
     name: 'Grid-Component',
     mounted() {
-      board();
+      board(this.$route.name);
     }
   };
 </script>
