@@ -1,5 +1,3 @@
-// timer.js
-
 export class Timer {
     constructor() {
         this.elapsedTime = 0;  // Temps écoulé en secondes

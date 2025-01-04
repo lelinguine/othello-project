@@ -1,27 +1,20 @@
 import { Timer } from './Timer.mjs';
-import { nodeUpdateEventTarget } from '../events.mjs';
+import { nodeUpdateEventTarget, gridUpdateEventTarget } from '../events.mjs';
 
 export class Game {
 
     constructor(grid) {
         this.grid = grid;
-        this.currentPlayer = 'black'; // Le joueur noir commence
         this.laps = 0;
+        this.gameOver = false;
         this.timer = new Timer();
-        this.listenToNodeUpdates();
         this.initializeBoard();
-    }
-
-    // Écoute les événements de mise à jour des nœuds
-    listenToNodeUpdates() {
-        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
-            const node = event.target.node; // Récupère le nœud mis à jour
-            this.handleNodeUpdate(node);   // Traite le nœud mis à jour
-        });
+        this.listenToNodeUpdates();
     }
 
     // Initialisation de la grille avec les 4 pions de départ
     initializeBoard() {
+        this.currentPlayer = 'black'; // Le joueur noir commence
         const middle = Math.floor(this.grid.width / 2);
         this.grid.getById(middle * this.grid.width + middle).state = 'white';
         this.grid.getById((middle - 1) * this.grid.width + (middle - 1)).state = 'white';
@@ -30,44 +23,51 @@ export class Game {
         this.markValidMoves();
     }
 
+    stop() {
+        this.timer.stop();
+        this.gameOver = true;
+        this.laps = 0;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------------
+
+    // Écoute les événements de mise à jour des nœuds
+    listenToNodeUpdates() {
+        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
+            const node = event.target.node;
+            this.handleNodeUpdate(node); 
+        });
+    }
+
     // Gère les mises à jour d'un nœud
     handleNodeUpdate(node) {
         // Vérification si le coup est valide avant de placer le pion
         if (this.isValidMove(node.x, node.y)) {
-            // On place un pion du joueur actuel
-            node.state = this.currentPlayer;
 
-            // Vérification des captures
+            // Captures
             this.capturePawns(node);
 
-            // Changer de joueur
-            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
-
-            // Incrémenter le compteur de tours
-            this.laps++;
-
-            // Vérifier si le joueur peut encore jouer
-            if (!this.hasValidMoves(this.currentPlayer)) {
-                this.skipTurn();
-            }
-
-            // Vérifier la fin de la partie
-            if (this.isGameOver()) {
-                this.timer.stop();
-                this.endGame();
-            }
+            // Vérifier si le joueur actuel peut jouer, sinon sauter son tour
+            this.skipTurn();
 
             this.markValidMoves();
+
+            gridUpdateEventTarget.grid = this.grid;
+            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
+
+            if(this.gameOver) {
+                return;
+            }
         }
     }
 
     // -------------------------------------------------------------------------------------------------------------------
 
-
-    // -------------------------------------------------------------------------------------------------------------------
-
     // Capture des pions selon les règles du jeu
     capturePawns(node) {
+        // On place un pion du joueur actuel
+        node.state = this.currentPlayer;
+
         const directions = [
             { x: 1, y: 0 },  // droite
             { x: -1, y: 0 }, // gauche
@@ -212,16 +212,30 @@ export class Game {
         }
     }
 
+     // -------------------------------------------------------------------------------------------------------------------
+
     // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
-        // Passer au joueur suivant
         this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
-        this.laps++; // Incrémenter les tours même si le joueur ne joue pas
 
-        this.markValidMoves();
+        if (!this.hasValidMoves(this.currentPlayer)) {
+            // Passer au joueur suivant
+            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+
+            // Vérifier si le prochain joueur peut jouer
+            if (!this.hasValidMoves(this.currentPlayer)) {
+                // Si le prochain joueur ne peut pas jouer, on vérifie la fin de la partie
+                if (this.isGameOver()) {
+                    this.timer.stop();
+                    this.endGame();
+                    this.gameOver = true;
+                    return;
+                }
+            }
+        }
+        // Incrémenter le compteur de tours
+        this.laps++;
     }
-
-    // -------------------------------------------------------------------------------------------------------------------
 
     // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
     isGameOver() {
@@ -237,6 +251,11 @@ export class Game {
         const whiteCount = this.countPawns('white');
 
         let contextContainer = document.getElementById('context');
+
+        if(contextContainer == null) {
+            return;
+        }
+
         contextContainer.innerHTML = "";
 
         let p = document.createElement('p');
