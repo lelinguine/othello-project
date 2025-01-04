@@ -43,15 +43,18 @@ export class Robot {
                 return;  // Sortie si aucun coup n'est disponible
             }
     
-            // Choix aléatoire d'un node
-            let randomNode = whiteGreyNodes[Math.floor(Math.random() * whiteGreyNodes.length)];
-    
             // TODO: implémenter l'algorithme de recherche
-            let node  = Pruning(this.grid);
-            
+            let node = Pruning(this, whiteGreyNodes);
+            node.found = false;
+
+            let randomNode = whiteGreyNodes[Math.floor(Math.random() * whiteGreyNodes.length)];
+
+            console.log('Robot played:', node);
+            console.log('Robot played:', randomNode);
+
             setTimeout(() => {
-                nodeUpdateEventTarget.node = randomNode;
-                nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', randomNode));
+                nodeUpdateEventTarget.node = node;
+                nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', node));
                 if(this.mod == "player") {
                     contextContainer.style.display = 'none';
                 }
