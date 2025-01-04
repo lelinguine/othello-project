@@ -5,12 +5,15 @@
 </template>
 
 <script>
-  import board from '../logic/board.mjs';
+  import { board, unboard } from '../logic/board.mjs';
 
   export default {
     name: 'Grid-Component',
     mounted() {
       board(this.$route.name);
+    },
+    beforeUnmount() {
+      unboard();
     }
   };
 </script>

@@ -31,6 +31,7 @@ export class GridEvent extends EventTarget {
 
     set grid(grid) {
         this._grid = grid;
+        this._grid.render();
     }
 
     get grid() {

@@ -1,10 +1,13 @@
 import { nodeUpdateEventTarget, gridUpdateEventTarget } from '../events.mjs';
+import Pruning from '../algorithm.mjs';
 
 export class Robot {
-    constructor(game, grid, player) {
+    constructor(game, grid, player, mod) {
         this.game = game;
         this.grid = grid;
         this.player = player;
+        this.mod = mod;
+        this.isPlaying = true;
         this.listenToNodeUpdates();
     }
 
@@ -17,37 +20,46 @@ export class Robot {
 
     // Joue un coup
     play() {
-        if (this.game.currentPlayer === this.player) {
+        if (this.game.currentPlayer === this.player && this.isPlaying) {
             let contextContainer = document.getElementById('context');
-            contextContainer.innerHTML = "";
+            if(this.mod == "player") {
+                if(contextContainer == null) {
+                    return;
+                }
+
+                contextContainer.innerHTML = "";
+
+                let p = document.createElement('p');
+                p.innerHTML = 'Thinking...';
+        
+                contextContainer.appendChild(p);
+                contextContainer.style.display = 'flex';
+            }
     
-            let p = document.createElement('p');
-            p.innerHTML = 'Thinking...';
-    
-            contextContainer.appendChild(p);
-            //contextContainer.style.display = 'flex';
-    
-            //recuperer dans la grid les nodes qui ont le state 'white-grey'
-            let whiteGreyNodes = this.grid.nodes.filter(node => node.state === 'white-grey');
+            // Récupérer dans la grid les nodes qui ont le state
+            let whiteGreyNodes = this.grid.nodes.filter(node => node.state === this.player + '-grey');
     
             if (whiteGreyNodes.length === 0) {
-                console.log('Problem skip turn robot');
                 return;  // Sortie si aucun coup n'est disponible
             }
     
-            //choix aleatoire d'un node
+            // Choix aléatoire d'un node
             let randomNode = whiteGreyNodes[Math.floor(Math.random() * whiteGreyNodes.length)];
     
-            //TODO: implementer l'algorithme de recherche
-            // const node = Pruning(this.grid);
-           
-      
-            console.log('Robot played' + randomNode);
-            nodeUpdateEventTarget.node = randomNode;
-            nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', randomNode));
+            // TODO: implémenter l'algorithme de recherche
+            let node  = Pruning(this.grid);
             
-            contextContainer.style.display = 'none';
-            this.grid.render();
+            setTimeout(() => {
+                nodeUpdateEventTarget.node = randomNode;
+                nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', randomNode));
+                if(this.mod == "player") {
+                    contextContainer.style.display = 'none';
+                }
+            }, 400);
         }
+    }
+
+    stop() {
+        this.isPlaying = false;
     }
 }

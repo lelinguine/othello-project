@@ -6,6 +6,7 @@ export class Game {
     constructor(grid) {
         this.grid = grid;
         this.laps = 0;
+        this.gameOver = false;
         this.timer = new Timer();
         this.initializeBoard();
         this.listenToNodeUpdates();
@@ -20,6 +21,12 @@ export class Game {
         this.grid.getById(middle * this.grid.width + (middle - 1)).state = 'black';
         this.grid.getById((middle - 1) * this.grid.width + middle).state = 'black';
         this.markValidMoves();
+    }
+
+    stop() {
+        this.timer.stop();
+        this.gameOver = true;
+        this.laps = 0;
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -42,11 +49,15 @@ export class Game {
 
             // Vérifier si le joueur actuel peut jouer, sinon sauter son tour
             this.skipTurn();
-            
+
             this.markValidMoves();
 
             gridUpdateEventTarget.grid = this.grid;
             gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
+
+            if(this.gameOver) {
+                return;
+            }
         }
     }
 
@@ -205,7 +216,6 @@ export class Game {
 
     // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
-        // Marquer les mouvements valides pour le prochain joueur
         this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
 
         if (!this.hasValidMoves(this.currentPlayer)) {
@@ -218,6 +228,7 @@ export class Game {
                 if (this.isGameOver()) {
                     this.timer.stop();
                     this.endGame();
+                    this.gameOver = true;
                     return;
                 }
             }
@@ -240,6 +251,11 @@ export class Game {
         const whiteCount = this.countPawns('white');
 
         let contextContainer = document.getElementById('context');
+
+        if(contextContainer == null) {
+            return;
+        }
+
         contextContainer.innerHTML = "";
 
         let p = document.createElement('p');

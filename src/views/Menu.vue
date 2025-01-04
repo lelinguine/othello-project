@@ -6,7 +6,7 @@
         <div class="view">
             <router-link to="/player"><button class="default">Player<img src="../assets/icons/player.png" alt="" width="30"></button></router-link>
             <router-link to="/multiplayer"><button class="alternative">Multiplayer<img src="../assets/icons/multiplayer.png" alt="" width="30"></button></router-link>
-            <router-link to="/spectator"><button class="alternative" disabled="true">Spectator<img src="../assets/icons/spectator.png" alt="" width="30"></button></router-link>
+            <router-link to="/spectator"><button class="alternative">Spectator<img src="../assets/icons/spectator.png" alt="" width="30"></button></router-link>
         </div>
     </div>
 </template>

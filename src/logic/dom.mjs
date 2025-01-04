@@ -40,18 +40,24 @@ export class Dom extends Grid {
                     let div = document.createElement('div'); //create a div element to display the node id and cost
                     div.classList.add(node.state, 'circle');
 
-                    if(node.state) {
+                    if(this.options.mod == "player" && node.state == "black-grey") {
+                        td.addEventListener('click', (event) => this.handleCellClick(event));
+                    }
+                    else if (this.options.mod == "multiplayer" && node.state) {
                         td.addEventListener('click', (event) => this.handleCellClick(event));
                     }
                     
                     td.appendChild(div);
                 }
             }
-
+            
             //append grid to the DOM
             let gridContainer = document.getElementById('grid-container');
-            gridContainer.innerHTML = "";
-            document.getElementById('grid-container').appendChild(htmlTableGrid);
+
+            if(gridContainer != null) {
+                gridContainer.innerHTML = "";
+                document.getElementById('grid-container').appendChild(htmlTableGrid);
+            }
         }
     }
 
@@ -65,7 +71,5 @@ export class Dom extends Grid {
 
         nodeUpdateEventTarget.node = node;
         nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', node));
-
-        this.render();
     }
 }
