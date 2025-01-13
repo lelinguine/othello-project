@@ -57,10 +57,9 @@ export class Game {
                 this.skipTurn();
                 this.markValidMoves();
             }
-
-            gridUpdateEventTarget.grid = this.grid;
-            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
         }
+        gridUpdateEventTarget.grid = this.grid;
+        gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
     }
 
     // -------------------------------------------------------------------------------------------------------------------
