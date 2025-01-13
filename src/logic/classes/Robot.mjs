@@ -37,13 +37,9 @@ export class Robot {
                 this.game.isRobotPlaying = false; // Libérer l'indicateur
                 return;
             }
-    
-            // Choix d'un coup aléatoire pour le moment
-            let node = validMoves[Math.floor(Math.random() * validMoves.length)];
 
             // TODO: implémenter l'algorithme de recherche
-            // let node = Pruning(this, whiteGreyNodes);
-            // node.found = false;
+            let node = Pruning(validMoves, this.grid);
     
             setTimeout(() => {
 
