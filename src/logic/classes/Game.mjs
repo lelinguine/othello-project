@@ -1,20 +1,37 @@
 import { Timer } from './Timer.mjs';
-import { nodeUpdateEventTarget, gridUpdateEventTarget } from '../events.mjs';
+import { nodeUpdateEventTarget } from '../events.mjs';
 
 export class Game {
 
     constructor(grid) {
         this.grid = grid;
+        this.currentPlayer = 'black'; // Le joueur noir commence
+        this.isThinking = false;     // Indique si l'IA réfléchit
+        this.isTurnInProgress = false; // Indique si un tour est en cours
         this.laps = 0;
-        this.gameOver = false;
         this.timer = new Timer();
-        this.initializeBoard();
+        this.aiPlayers = ['white']; // Liste des joueurs IA
         this.listenToNodeUpdates();
+        this.initializeBoard();
+
+        // Si le joueur actuel est une IA, elle joue tout de suite
+        if (this.isAI(this.currentPlayer)) {
+            this.playAI();
+        }
     }
 
-    // Initialisation de la grille avec les 4 pions de départ
+    isAI(player) {
+        return this.aiPlayers.includes(player);
+    }
+
+    listenToNodeUpdates() {
+        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
+            const node = event.target.node;
+            this.handleNodeUpdate(node);
+        });
+    }
+
     initializeBoard() {
-        this.currentPlayer = 'black'; // Le joueur noir commence
         const middle = Math.floor(this.grid.width / 2);
         this.grid.getById(middle * this.grid.width + middle).state = 'white';
         this.grid.getById((middle - 1) * this.grid.width + (middle - 1)).state = 'white';
@@ -23,167 +40,117 @@ export class Game {
         this.markValidMoves();
     }
 
-    stop() {
-        this.timer.stop();
-        this.gameOver = true;
-        this.laps = 0;
-    }
-
-    // -------------------------------------------------------------------------------------------------------------------
-
-    // Écoute les événements de mise à jour des nœuds
-    listenToNodeUpdates() {
-        nodeUpdateEventTarget.addEventListener('NodeUpdateEvent', (event) => {
-            const node = event.target.node;
-            this.handleNodeUpdate(node); 
-        });
-    }
-
-    // Gère les mises à jour d'un nœud
     handleNodeUpdate(node) {
-        // Vérification si le coup est valide avant de placer le pion
+        if (this.isTurnInProgress) return;
+        this.isTurnInProgress = true;
+
         if (this.isValidMove(node.x, node.y)) {
-
-            // Captures
+            node.state = this.currentPlayer;
             this.capturePawns(node);
+            this.emitScoreUpdate();
+            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
 
-            // Vérifier si le joueur actuel peut jouer, sinon sauter son tour
-            this.skipTurn();
-
-            this.markValidMoves();
-
-            gridUpdateEventTarget.grid = this.grid;
-            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
-
-            if(this.gameOver) {
-                return;
+            if (this.isAI(this.currentPlayer)) {
+                this.playAI();
             }
+
+            this.laps++;
+            if (!this.hasValidMoves(this.currentPlayer)) {
+                this.skipTurn();
+            }
+            if (this.isGameOver()) {
+                this.timer.stop();
+                this.endGame();
+            }
+            this.markValidMoves();
         }
+
+        this.isTurnInProgress = false;
     }
 
-    // -------------------------------------------------------------------------------------------------------------------
+    emitScoreUpdate() {
+        const score = this.getScore();
+        const event = new CustomEvent('score-update', { detail: score });
+        window.dispatchEvent(event);
+    }
 
-    // Capture des pions selon les règles du jeu
     capturePawns(node) {
-        // On place un pion du joueur actuel
-        node.state = this.currentPlayer;
-
         const directions = [
-            { x: 1, y: 0 },  // droite
-            { x: -1, y: 0 }, // gauche
-            { x: 0, y: 1 },  // bas
-            { x: 0, y: -1 }, // haut
-            { x: 1, y: 1 },  // diagonale bas droite
-            { x: -1, y: -1 }, // diagonale haut gauche
-            { x: -1, y: 1 },  // diagonale bas gauche
-            { x: 1, y: -1 },  // diagonale haut droite
+            { x: 1, y: 0 }, { x: -1, y: 0 },
+            { x: 0, y: 1 }, { x: 0, y: -1 },
+            { x: 1, y: 1 }, { x: -1, y: -1 },
+            { x: -1, y: 1 }, { x: 1, y: -1 }
         ];
 
-        // Parcours de toutes les directions
         directions.forEach(direction => {
             let captured = [];
             let x = node.x + direction.x;
             let y = node.y + direction.y;
 
-            // On continue de chercher dans la direction jusqu'à ce qu'on dépasse les limites
             while (this.isValidPosition(x, y)) {
-                let neighbor = this.grid.getById(y * this.grid.width + x);
-
-                if (this.isNextMove(neighbor)) {
-                    break;
-                }
+                const neighbor = this.grid.getById(y * this.grid.width + x);
 
                 if (neighbor.state === this.currentPlayer) {
-                    // Si on trouve un pion du joueur actuel, on capture tous les pions entre les deux
-                    captured.forEach(capturedNode => capturedNode.state = this.currentPlayer);
+                    captured.forEach(n => n.state = this.currentPlayer);
                     break;
                 }
 
-                // Sinon, on ajoute le pion à la liste des pions capturables
-                captured.push(neighbor);
+                if (neighbor.state === null) break;
 
+                captured.push(neighbor);
                 x += direction.x;
                 y += direction.y;
             }
         });
     }
 
-    // Vérifie si une position est valide pour jouer un coup
     isValidMove(x, y) {
-        // La cellule doit être vide
         const node = this.grid.getById(y * this.grid.width + x);
-        if (!this.isNextMove(node)) {
-            return false;
-        }
+        if (node.state !== null) return false;
 
-        // Vérifie si le coup peut capturer des pions adverses
-        return this.isValidMoveInDirection(x, y);
-    }
-
-    // Vérifie si un coup est valide dans une direction donnée
-    isValidMoveInDirection(x, y) {
         const directions = [
-            { x: 1, y: 0 },  // droite
-            { x: -1, y: 0 }, // gauche
-            { x: 0, y: 1 },  // bas
-            { x: 0, y: -1 }, // haut
-            { x: 1, y: 1 },  // diagonale bas droite
-            { x: -1, y: -1 }, // diagonale haut gauche
-            { x: -1, y: 1 },  // diagonale bas gauche
-            { x: 1, y: -1 },  // diagonale haut droite
+            { x: 1, y: 0 }, { x: -1, y: 0 },
+            { x: 0, y: 1 }, { x: 0, y: -1 },
+            { x: 1, y: 1 }, { x: -1, y: -1 },
+            { x: -1, y: 1 }, { x: 1, y: -1 }
         ];
 
-        for (const direction of directions) {
-            let captured = [];
-            let newX = x + direction.x;
-            let newY = y + direction.y;
-
-            while (this.isValidPosition(newX, newY)) {
-                const neighbor = this.grid.getById(newY * this.grid.width + newX);
-
-                if (this.isNextMove(neighbor)) {
-                    break;
-                }
-
-                if (neighbor.state === this.currentPlayer) {
-                    // S'il y a des pions capturables entre le pion joué et un pion de même couleur, c'est un coup valide
-                    if (captured.length > 0) {
-                        return true;
-                    }
-                    break;
-                }
-
-                // Ajouter à la liste des pions à capturer
-                captured.push(neighbor);
-
-                newX += direction.x;
-                newY += direction.y;
-            }
-        }
-
-        return false; // Aucun coup valide trouvé
+        return directions.some(direction => this.isValidMoveInDirection(x, y, direction));
     }
 
-    // Vérifie si une position est valide (dans les limites de la grille)
+    isValidMoveInDirection(x, y, direction) {
+        let foundOpponent = false;
+        let newX = x + direction.x;
+        let newY = y + direction.y;
+
+        while (this.isValidPosition(newX, newY)) {
+            const neighbor = this.grid.getById(newY * this.grid.width + newX);
+
+            if (neighbor.state === null) return false;
+            if (neighbor.state === this.currentPlayer) return foundOpponent;
+
+            foundOpponent = true;
+            newX += direction.x;
+            newY += direction.y;
+        }
+
+        return false;
+    }
+
     isValidPosition(x, y) {
         return x >= 0 && x < this.grid.width && y >= 0 && y < this.grid.height;
     }
 
-    // Vérifie si un joueur a des coups valides à jouer
     hasValidMoves(player) {
         for (let x = 0; x < this.grid.width; x++) {
             for (let y = 0; y < this.grid.height; y++) {
-                if (this.isValidMove(x, y)) {
-                    return true;
-                }
+                if (this.isValidMove(x, y)) return true;
             }
         }
         return false;
     }
 
-    // Marquer les cases valides où le joueur actuel peut jouer
     markValidMoves() {
-        // Réinitialiser les cases valides
         this.resetValidMoves();
 
         for (let x = 0; x < this.grid.width; x++) {
@@ -196,92 +163,146 @@ export class Game {
         }
     }
 
-    isNextMove(node) {
-        return node.state === null || node.state === 'black-grey' || node.state === 'white-grey';
-    }
-
-    // Réinitialiser les cases valides à leur état d'origine
     resetValidMoves() {
         for (let x = 0; x < this.grid.width; x++) {
             for (let y = 0; y < this.grid.height; y++) {
                 const node = this.grid.getById(y * this.grid.width + x);
-                if (this.isNextMove(node)) {
-                    node.state = null;  // Réinitialiser l'état de la case
+                if (node.state === 'black-grey' || node.state === 'white-grey') {
+                    node.state = null;
                 }
             }
         }
     }
 
-     // -------------------------------------------------------------------------------------------------------------------
-
-    // Sauter le tour du joueur actuel si aucun coup valide
     skipTurn() {
         this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+        this.laps++;
+        this.markValidMoves();
+    }
 
-        if (!this.hasValidMoves(this.currentPlayer)) {
-            // Passer au joueur suivant
-            this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+    playAI() {
+        if (this.isThinking || this.isTurnInProgress) return;
+        this.isThinking = true;
 
-            // Vérifier si le prochain joueur peut jouer
+        setTimeout(() => {
             if (!this.hasValidMoves(this.currentPlayer)) {
-                // Si le prochain joueur ne peut pas jouer, on vérifie la fin de la partie
-                if (this.isGameOver()) {
-                    this.timer.stop();
-                    this.endGame();
-                    this.gameOver = true;
-                    return;
+                this.skipTurn();
+            } else {
+                const validMoves = this.getValidMoves();
+                if (validMoves.length > 0) {
+                    let bestMove = validMoves[0];
+                    let bestScore = -Infinity;
+
+                    validMoves.forEach(move => {
+                        const score = this.evaluateMove(move);
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = move;
+                        }
+                    });
+
+                    this.handleNodeUpdate(bestMove);
+                }
+            }
+            this.isThinking = false;
+        }, 3000); // Temps d'attente : 3 secondes
+    }
+
+    getValidMoves() {
+        const moves = [];
+        for (let x = 0; x < this.grid.width; x++) {
+            for (let y = 0; y < this.grid.height; y++) {
+                if (this.isValidMove(x, y)) {
+                    moves.push(this.grid.getById(y * this.grid.width + x));
                 }
             }
         }
-        // Incrémenter le compteur de tours
-        this.laps++;
+        return moves;
     }
 
-    // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
-    isGameOver() {
-        // Vérifie si l'un des joueurs ne peut plus jouer
-        const blackMoves = this.hasValidMoves('black');
-        const whiteMoves = this.hasValidMoves('white');
-        return !blackMoves && !whiteMoves;
-    }
+    evaluateMove(node) {
+        const corners = [
+            { x: 0, y: 0 },
+            { x: 0, y: this.grid.height - 1 },
+            { x: this.grid.width - 1, y: 0 },
+            { x: this.grid.width - 1, y: this.grid.height - 1 }
+        ];
 
-    // Gère la fin de la partie et affiche le gagnant
-    endGame() {
-        const blackCount = this.countPawns('black');
-        const whiteCount = this.countPawns('white');
-
-        let contextContainer = document.getElementById('context');
-
-        if(contextContainer == null) {
-            return;
+        if (corners.some(corner => node.x === corner.x && node.y === corner.y)) {
+            return 100;
         }
 
-        contextContainer.innerHTML = "";
+        return this.getPotentialCaptures(node).length;
+    }
+    
+    stop() {
+        console.log("Le jeu est arrêté.");
+        this.timer.stop(); // Arrêter le timer si cela est pertinent.
+    }
+    
+    getPotentialCaptures(node) {
+        const directions = [
+            { x: 1, y: 0 }, { x: -1, y: 0 },
+            { x: 0, y: 1 }, { x: 0, y: -1 },
+            { x: 1, y: 1 }, { x: -1, y: -1 },
+            { x: -1, y: 1 }, { x: 1, y: -1 }
+        ];
 
-        let p = document.createElement('p');
-        if (blackCount > whiteCount) {
-            p.innerHTML = 'Black wins!';
-        } else if (whiteCount > blackCount) {
-            p.innerHTML = 'White wins!';
-        } else {
-            p.innerHTML = 'It\'s a tie!';
-        }
+        let captured = [];
+        directions.forEach(direction => {
+            let tempCaptured = [];
+            let x = node.x + direction.x;
+            let y = node.y + direction.y;
 
-        contextContainer.appendChild(p);
-        contextContainer.style.display = 'flex';
+            while (this.isValidPosition(x, y)) {
+                const neighbor = this.grid.getById(y * this.grid.width + x);
+
+                if (neighbor.state === this.currentPlayer) {
+                    captured = captured.concat(tempCaptured);
+                    break;
+                }
+
+                if (neighbor.state === null) break;
+
+                tempCaptured.push(neighbor);
+                x += direction.x;
+                y += direction.y;
+            }
+        });
+
+        return captured;
     }
 
-    // Compte le nombre de pions d'un joueur
-    countPawns(player) {
-        let count = 0;
+    getScore() {
+        let blackCount = 0;
+        let whiteCount = 0;
+
         for (let x = 0; x < this.grid.width; x++) {
             for (let y = 0; y < this.grid.height; y++) {
                 const node = this.grid.getById(y * this.grid.width + x);
-                if (node.state === player) {
-                    count++;
-                }
+                if (node.state === 'black') blackCount++;
+                if (node.state === 'white') whiteCount++;
             }
         }
-        return count;
+
+        return { black: blackCount, white: whiteCount };
+    }
+
+    isGameOver() {
+        return !this.hasValidMoves('black') && !this.hasValidMoves('white');
+    }
+
+    endGame() {
+        const score = this.getScore();
+        const contextContainer = document.getElementById('context');
+        contextContainer.innerHTML = '';
+
+        const p = document.createElement('p');
+        if (score.black > score.white) p.innerHTML = 'Black wins!';
+        else if (score.white > score.black) p.innerHTML = 'White wins!';
+        else p.innerHTML = "It's a tie!";
+
+        contextContainer.appendChild(p);
+        contextContainer.style.display = 'flex';
     }
 }
