@@ -52,15 +52,14 @@ export class Game {
                 this.timer.stop();
                 this.endGame();
                 this.gameOver = true;
-                return;
             }
             else {
                 this.skipTurn();
                 this.markValidMoves();
             }
-            gridUpdateEventTarget.grid = this.grid;
-            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
         }
+        gridUpdateEventTarget.grid = this.grid;
+        gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
     }
 
     // -------------------------------------------------------------------------------------------------------------------
