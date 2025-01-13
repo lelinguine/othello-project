@@ -50,13 +50,15 @@ export class Game {
             if (this.isGameOver()) {
                 this.stop();
                 this.endGame();
+                this.grid.render();
+                return;
             }
             else {
                 this.skipTurn();
                 this.markValidMoves();
+                gridUpdateEventTarget.grid = this.grid;
+                gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
             }
-            gridUpdateEventTarget.grid = this.grid;
-            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
         }
     }
 
