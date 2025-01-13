@@ -19,43 +19,40 @@ export class Robot {
     }
 
     // Joue un coup
+    wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    
     play() {
-        if (this.game.currentPlayer === this.player && this.isPlaying) {
+        if (this.game.currentPlayer === this.player && this.isPlaying && !this.game.gameOver) {
+    
             let contextContainer = document.getElementById('context');
-            if(this.mod == "player") {
-                if(contextContainer == null) {
-                    return;
-                }
-
-                contextContainer.innerHTML = "";
-
-                let p = document.createElement('p');
-                p.innerHTML = 'Thinking...';
-        
-                contextContainer.appendChild(p);
+            if (this.mod === "player" && contextContainer) {
+                contextContainer.innerHTML = "<p>Thinking...</p>";
                 contextContainer.style.display = 'flex';
             }
     
-            // Récupérer dans la grid les nodes qui ont le state
-            let whiteGreyNodes = this.grid.nodes.filter(node => node.state === this.player + '-grey');
-    
-            if (whiteGreyNodes.length === 0) {
-                return;  // Sortie si aucun coup n'est disponible
+            let validMoves = this.grid.nodes.filter(node => node.state === this.player + '-grey');
+            if (validMoves.length === 0) {
+                this.game.isRobotPlaying = false; // Libérer l'indicateur
+                return;
             }
-    
-            // Choix aléatoire d'un node
-            let randomNode = whiteGreyNodes[Math.floor(Math.random() * whiteGreyNodes.length)];
-    
+
             // TODO: implémenter l'algorithme de recherche
-            let node  = Pruning(this.grid);
-            
+            let node = Pruning(validMoves, this.grid);
+    
             setTimeout(() => {
-                nodeUpdateEventTarget.node = randomNode;
-                nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', randomNode));
-                if(this.mod == "player") {
+
+                if (this.mod === "player" && contextContainer) {
                     contextContainer.style.display = 'none';
                 }
-            }, 400);
+
+                console.log('Robot played');
+        
+                nodeUpdateEventTarget.node = node;
+                nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', node));
+
+            }, 200);
         }
     }
 

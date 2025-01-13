@@ -21,6 +21,8 @@ export class Game {
         this.grid.getById(middle * this.grid.width + (middle - 1)).state = 'black';
         this.grid.getById((middle - 1) * this.grid.width + middle).state = 'black';
         this.markValidMoves();
+
+        console.log('Game started');
     }
 
     stop() {
@@ -44,21 +46,20 @@ export class Game {
         // Vérification si le coup est valide avant de placer le pion
         if (this.isValidMove(node.x, node.y)) {
 
-            // Captures
             this.capturePawns(node);
 
-            // Vérifier si le joueur actuel peut jouer, sinon sauter son tour
-            this.skipTurn();
-
-            this.markValidMoves();
-
-            gridUpdateEventTarget.grid = this.grid;
-            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
-
-            if(this.gameOver) {
-                return;
+            if (this.isGameOver()) {
+                this.timer.stop();
+                this.endGame();
+                this.gameOver = true;
+            }
+            else {
+                this.skipTurn();
+                this.markValidMoves();
             }
         }
+        gridUpdateEventTarget.grid = this.grid;
+        gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -170,7 +171,7 @@ export class Game {
     }
 
     // Vérifie si un joueur a des coups valides à jouer
-    hasValidMoves(player) {
+    hasValidMoves() {
         for (let x = 0; x < this.grid.width; x++) {
             for (let y = 0; y < this.grid.height; y++) {
                 if (this.isValidMove(x, y)) {
@@ -221,17 +222,7 @@ export class Game {
         if (!this.hasValidMoves(this.currentPlayer)) {
             // Passer au joueur suivant
             this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
-
-            // Vérifier si le prochain joueur peut jouer
-            if (!this.hasValidMoves(this.currentPlayer)) {
-                // Si le prochain joueur ne peut pas jouer, on vérifie la fin de la partie
-                if (this.isGameOver()) {
-                    this.timer.stop();
-                    this.endGame();
-                    this.gameOver = true;
-                    return;
-                }
-            }
+            console.log('Turn skipped');
         }
         // Incrémenter le compteur de tours
         this.laps++;
@@ -239,11 +230,13 @@ export class Game {
 
     // Vérifie si la partie est terminée (aucun coup valide possible pour les deux joueurs)
     isGameOver() {
-        // Vérifie si l'un des joueurs ne peut plus jouer
-        const blackMoves = this.hasValidMoves('black');
-        const whiteMoves = this.hasValidMoves('white');
-        return !blackMoves && !whiteMoves;
-    }
+        const blackHasMoves = this.hasValidMoves();
+        this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+        const whiteHasMoves = this.hasValidMoves();
+        this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
+    
+        return !blackHasMoves && !whiteHasMoves;
+    }    
 
     // Gère la fin de la partie et affiche le gagnant
     endGame() {
@@ -261,7 +254,7 @@ export class Game {
         let p = document.createElement('p');
         if (blackCount > whiteCount) {
             p.innerHTML = 'Black wins!';
-        } else if (whiteCount > blackCount) {
+        } else if (blackCount < whiteCount) {
             p.innerHTML = 'White wins!';
         } else {
             p.innerHTML = 'It\'s a tie!';
@@ -269,6 +262,8 @@ export class Game {
 
         contextContainer.appendChild(p);
         contextContainer.style.display = 'flex';
+
+        console.log('Game over');
     }
 
     // Compte le nombre de pions d'un joueur
