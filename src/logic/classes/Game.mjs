@@ -2,7 +2,6 @@ import { Timer } from './Timer.mjs';
 import { nodeUpdateEventTarget } from '../events.mjs';
 
 export class Game {
-
     constructor(grid) {
         this.grid = grid;
         this.currentPlayer = 'black'; // Le joueur noir commence
@@ -20,6 +19,7 @@ export class Game {
         }
     }
 
+    // Détermine si le joueur actuel est une IA
     isAI(player) {
         return this.aiPlayers.includes(player);
     }
@@ -47,9 +47,14 @@ export class Game {
         if (this.isValidMove(node.x, node.y)) {
             node.state = this.currentPlayer;
             this.capturePawns(node);
+
+            // Émettre les scores mis à jour
             this.emitScoreUpdate();
+
+            // Changer de joueur
             this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
 
+            // Vérifier si le prochain joueur est une IA
             if (this.isAI(this.currentPlayer)) {
                 this.playAI();
             }
@@ -234,12 +239,12 @@ export class Game {
 
         return this.getPotentialCaptures(node).length;
     }
-    
+
     stop() {
         console.log("Le jeu est arrêté.");
         this.timer.stop(); // Arrêter le timer si cela est pertinent.
     }
-    
+
     getPotentialCaptures(node) {
         const directions = [
             { x: 1, y: 0 }, { x: -1, y: 0 },

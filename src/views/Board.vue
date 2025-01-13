@@ -36,23 +36,18 @@
       },
       // Met à jour le score à partir de l'événement émis
       updateScore(event) {
-        if (!event.detail) return; // S'assurer que les données sont présentes
-        const { black, white } = event.detail;
-        this.scoreBlack = black ?? 0; // Valeur par défaut à 0 si non définie
-        this.scoreWhite = white ?? 0;
+        const { black, white } = event.detail; // Récupérer les scores depuis l'événement
+        this.scoreBlack = black;
+        this.scoreWhite = white;
       },
     },
     mounted() {
-      try {
-        // Écouter l'événement global émis par Game.mjs
-        window.addEventListener('score-update', this.updateScore);
-      } catch (error) {
-        console.error("Erreur lors de l'écoute des scores :", error);
-      }
+      // Écouter l'événement global émis par Game.mjs
+      window.addEventListener('score-update', this.updateScore);
     },
     beforeUnmount() {
-      // Nettoyer l'écouteur pour éviter les fuites de mémoire
-      window.removeEventListener('score-update', this.updateScore);
+    // Nettoyer l'écouteur pour éviter les fuites de mémoire
+    window.removeEventListener('score-update', this.updateScore);
     },
   };
 </script>
@@ -64,3 +59,4 @@
   text-align: center;
 }
 </style>
+
