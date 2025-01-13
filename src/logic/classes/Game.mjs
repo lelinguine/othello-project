@@ -21,14 +21,13 @@ export class Game {
         this.grid.getById(middle * this.grid.width + (middle - 1)).state = 'black';
         this.grid.getById((middle - 1) * this.grid.width + middle).state = 'black';
         this.markValidMoves();
-
-        console.log('Game started');
     }
 
     stop() {
         this.timer.stop();
         this.gameOver = true;
         this.laps = 0;
+        this.currentPlayer = 'black';
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -44,22 +43,21 @@ export class Game {
     // Gère les mises à jour d'un nœud
     handleNodeUpdate(node) {
         // Vérification si le coup est valide avant de placer le pion
-        if (this.isValidMove(node.x, node.y)) {
+        if (this.isValidMove(node.x, node.y) && !this.gameOver) {
 
             this.capturePawns(node);
 
             if (this.isGameOver()) {
-                this.timer.stop();
+                this.stop();
                 this.endGame();
-                this.gameOver = true;
             }
             else {
                 this.skipTurn();
                 this.markValidMoves();
             }
+            gridUpdateEventTarget.grid = this.grid;
+            gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
         }
-        gridUpdateEventTarget.grid = this.grid;
-        gridUpdateEventTarget.dispatchEvent(new Event('GridUpdateEvent', this.grid));
     }
 
     // -------------------------------------------------------------------------------------------------------------------
@@ -222,7 +220,6 @@ export class Game {
         if (!this.hasValidMoves(this.currentPlayer)) {
             // Passer au joueur suivant
             this.currentPlayer = this.currentPlayer === 'black' ? 'white' : 'black';
-            console.log('Turn skipped');
         }
         // Incrémenter le compteur de tours
         this.laps++;
@@ -262,8 +259,6 @@ export class Game {
 
         contextContainer.appendChild(p);
         contextContainer.style.display = 'flex';
-
-        console.log('Game over');
     }
 
     // Compte le nombre de pions d'un joueur

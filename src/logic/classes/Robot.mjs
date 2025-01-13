@@ -34,11 +34,10 @@ export class Robot {
     
             let validMoves = this.grid.nodes.filter(node => node.state === this.player + '-grey');
             if (validMoves.length === 0) {
-                this.game.isRobotPlaying = false; // Libérer l'indicateur
                 return;
             }
 
-            // TODO: implémenter l'algorithme de recherche
+            // Algorithme de recherche
             let node = Pruning(validMoves, this.grid);
     
             setTimeout(() => {
@@ -46,12 +45,9 @@ export class Robot {
                 if (this.mod === "player" && contextContainer) {
                     contextContainer.style.display = 'none';
                 }
-
-                console.log('Robot played');
         
                 nodeUpdateEventTarget.node = node;
                 nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', node));
-
             }, 200);
         }
     }

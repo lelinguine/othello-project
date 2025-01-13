@@ -69,8 +69,6 @@ export class Dom extends Grid {
         let target = event.currentTarget;
         let node = self.get(target.id);
 
-        console.log('Player played');
-
         nodeUpdateEventTarget.node = node;
         nodeUpdateEventTarget.dispatchEvent(new Event('NodeUpdateEvent', node));
     }
