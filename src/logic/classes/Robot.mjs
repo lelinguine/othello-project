@@ -2,11 +2,12 @@ import { nodeUpdateEventTarget, gridUpdateEventTarget } from '../events.mjs';
 import Pruning from '../algorithm.mjs';
 
 export class Robot {
-    constructor(game, grid, player, mod) {
+    constructor(game, grid, player, mod, heuristic) {
         this.game = game;
         this.grid = grid;
         this.player = player;
         this.mod = mod;
+        this.heuristic = heuristic; //"pruning" or "random"
         this.isPlaying = true;
         this.listenToNodeUpdates();
     }
@@ -38,7 +39,15 @@ export class Robot {
             }
 
             // Algorithme de recherche
-            let node = Pruning(validMoves, this.grid);
+            let node;
+            // Pruning
+            if(this.heuristic === "pruning") {
+                node = Pruning(validMoves, this.grid);
+            }
+            // Random
+            else {
+                node = validMoves[Math.floor(Math.random() * validMoves.length)];
+            }
     
             setTimeout(() => {
 

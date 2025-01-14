@@ -22,11 +22,11 @@ function board(route) {
     game = new Game(grid);
 
     if (!route.includes('multi') && route.includes('player')) {
-      robot_white = new Robot(game, grid, "white", route);
+      robot_white = new Robot(game, grid, "white", route, "pruning");
     }
     else if (route.includes('spectator')) {
-      robot_black = new Robot(game, grid, "black", route);
-      robot_white = new Robot(game, grid, "white", route);
+      robot_black = new Robot(game, grid, "black", route, "random");
+      robot_white = new Robot(game, grid, "white", route, "pruning");
       robot_black.play();
     }
 
