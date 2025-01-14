@@ -10,7 +10,11 @@ export class Game {
         this.laps = 0;
         this.timer = new Timer();
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
         this.aiPlayers = ['white']; // Liste des joueurs IA
+=======
+        this.aiPlayers = ['white']; // Liste des joueurs IA (ajustez selon vos besoins)
+>>>>>>> Stashed changes
 =======
         this.aiPlayers = ['white']; // Liste des joueurs IA (ajustez selon vos besoins)
 >>>>>>> Stashed changes
@@ -22,8 +26,13 @@ export class Game {
             this.playAI();
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     }
 
+=======
+
+    }
+>>>>>>> Stashed changes
 =======
 
     }
@@ -59,7 +68,11 @@ export class Game {
 
             // Émettre les scores mis à jour
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
             this.emitScoreUpdate();
+=======
+            this.emitScoreUpdate();       
+>>>>>>> Stashed changes
 =======
             this.emitScoreUpdate();       
 >>>>>>> Stashed changes
@@ -72,7 +85,10 @@ export class Game {
                 this.playAI();
             }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 
             // Incrémenter le compteur de tours
             this.laps++;
@@ -89,8 +105,12 @@ export class Game {
             this.markValidMoves();
         }
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         this.isTurnInProgress = false;
+=======
+        
+>>>>>>> Stashed changes
 =======
         
 >>>>>>> Stashed changes
@@ -103,7 +123,10 @@ export class Game {
     }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
     // Une méthode pour émettre les scores vers le composant Vue.js
     emitScoreUpdate() {
         const score = this.getScore(); // Calculer les scores actuels
@@ -235,6 +258,139 @@ playAI() {
         // Évaluer et choisir le meilleur coup
         let bestMove = validMoves[0];
         let bestScore = -Infinity;
+<<<<<<< Updated upstream
+=======
+
+        validMoves.forEach(move => {
+            let score = this.evaluateMove(move);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        });
+
+        this.handleNodeUpdate(bestMove); // Effectue le meilleur coup trouvé
+    }
+
+    console.log("L'IA réfléchit...");
+
+    // Ajoutez un délai avant que l'IA joue
+    setTimeout(() => {
+        let validMoves = this.getValidMoves(); // Trouver les coups valides
+        if (validMoves.length > 0) {
+            // Choisir un coup, ici basé sur votre logique existante
+            let bestMove = validMoves[0];
+            let bestScore = -Infinity;
+
+            validMoves.forEach(move => {
+                let score = this.evaluateMove(move);
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
+            });
+
+            this.handleNodeUpdate(bestMove); // L'IA joue le coup choisi
+        }
+    }, 5000); // Délai de 5000ms (5 secondes)
+}
+
+// Récupère tous les coups valides pour le joueur actuel
+getValidMoves() {
+    let moves = [];
+    for (let x = 0; x < this.grid.width; x++) {
+        for (let y = 0; y < this.grid.height; y++) {
+            if (this.isValidMove(x, y)) {
+                moves.push(this.grid.getById(y * this.grid.width + x));
+            }
+        }
+    }
+    return moves;
+}
+
+// Évalue un coup pour l'IA
+evaluateMove(node) {
+    // Donne un score aux coins
+    const corners = [
+        { x: 0, y: 0 },
+        { x: 0, y: this.grid.height - 1 },
+        { x: this.grid.width - 1, y: 0 },
+        { x: this.grid.width - 1, y: this.grid.height - 1 }
+    ];
+
+    for (let corner of corners) {
+        if (node.x === corner.x && node.y === corner.y) {
+            return 100; // Score élevé pour un coin
+        }
+    }
+
+    // Calculer un score basé sur le nombre de captures potentielles
+    let captureScore = this.getPotentialCaptures(node).length;
+    return captureScore;
+}
+
+// Retourne les pions capturables pour un coup donné
+getPotentialCaptures(node) {
+    const directions = [
+        { x: 1, y: 0 },  // droite
+        { x: -1, y: 0 }, // gauche
+        { x: 0, y: 1 },  // bas
+        { x: 0, y: -1 }, // haut
+        { x: 1, y: 1 },  // diagonale bas droite
+        { x: -1, y: -1 }, // diagonale haut gauche
+        { x: -1, y: 1 },  // diagonale bas gauche
+        { x: 1, y: -1 }   // diagonale haut droite
+    ];
+
+    let captured = [];
+
+    directions.forEach(direction => {
+        let tempCaptured = [];
+        let x = node.x + direction.x;
+        let y = node.y + direction.y;
+
+        while (this.isValidPosition(x, y)) {
+            let neighbor = this.grid.getById(y * this.grid.width + x);
+
+            if (this.isNextMove(neighbor)) {
+                break;
+            }
+
+            if (neighbor.state === this.currentPlayer) {
+                captured = captured.concat(tempCaptured);
+                break;
+            }
+
+            tempCaptured.push(neighbor);
+
+            x += direction.x;
+            y += direction.y;
+        }
+    });
+
+    return captured;
+}
+
+getScore() {
+    let blackCount = 0;
+    let whiteCount = 0;
+
+    for (let x = 0; x < this.grid.width; x++) {
+        for (let y = 0; y < this.grid.height; y++) {
+            const node = this.grid.getById(y * this.grid.width + x);
+            if (node.state === 'black') {
+                blackCount++;
+            } else if (node.state === 'white') {
+                whiteCount++;
+            }
+        }
+    }
+
+    return { black: blackCount, white: whiteCount };
+}
+
+    // -------------------------------------------------------------------------------------------------------------------
+>>>>>>> Stashed changes
 
         validMoves.forEach(move => {
             let score = this.evaluateMove(move);
