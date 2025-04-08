@@ -1,7 +1,7 @@
 <template>
   <div class="container">
       <div class="title"><h1>Board</h1><p><mark class="alternative">{{ this.$route.name }}</mark></p></div>
-      <a class="back" @click="goBack"><img src="../assets/icons/arrow.png" alt="" width="30">Back</a>
+      <a class="back" @click="goBack"><img src="../assets/icons/back.svg" alt="" width="30">Back</a>
       <div class="view">
         <Grid/>
       </div>
